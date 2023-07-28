@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+<style type="text/css">
+.show{
+display:none;
+color:#ffa500;
+}
+
+.close{
+display:none;
+color:#ffa500;
+}
+
+.show.hidden{
+display:inline-block;
+
+}
+
+.close.hidden{
+display:inline-block;
+
+}
+
+
+
+</style>
+        <h1>WebSocket Chat</h1>
+        <h2>Your ID: <span id="ws-id"></span></h2>
+        
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button onclick="sendMessage()">Send</button>
+	    <button onclick="clearMessages()">Clear Messages</button>
+ <input type="button" id="co" name="conn" value="连接" onclick="openConn()"/>
+<input type="button" name="conn" value="断开连接" onclick="closeWe()"/>
+
+<div class="show">连接状态：连接</div>
+<div class="close">连接状态：断开</div>
+ <div id="onlineCount">Online Count: 0</div>
+
+
+       
+        <ul id='messages'>
+        </ul>
+        <script>
+            var client_id = Date.now();
+            document.querySelector("#ws-id").textContent = client_id;
+	    var ws;
+function sendMessage() {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                //event.preventDefault()
+            }
+function openConn(){
+init()
+}
+	    function init(){
+		ws = new WebSocket(`ws://ip:8765/${client_id}`);
+		ws.onopen = function () {
+		ws.send("Request Online Count");
+		  document.getElementById('co').disabled=true
+                  let show=document.querySelector('.show')
+		  let close=document.querySelector('.close')
+		  close.classList.remove('hidden')
+		  show.classList.add('hidden')
+}
+		ws.onclose = function () {
+            // 监听整个过程中websocket的状态
+		document.getElementById('co').disabled=false
+            console.log('ws连接状态：' + ws.readyState);
+		let show=document.querySelector('.close')
+		let close=document.querySelector('.show')
+		close.classList.remove('hidden')
+		show.classList.add('hidden')
+			
+                        }
+            
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+		//过滤，服务器会发两个消息，一个连接数，一个消息，连接数过滤掉
+		if (event.data.includes("Online")){
+			console.log("kong")
+			const message1 = event.data;
+			const count = parseInt(message1.split(":")[1].trim());
+                	updateOnlineCount(count);
+			}else{
+			message.appendChild(content)
+		
+                       messages.appendChild(message)
+              }
+                
+
+		 
+            
+            }
+}
+
+
+
+            
+	
+	function clearMessages() {
+            const messagesDiv = document.getElementById("messages");
+            messagesDiv.innerHTML = "";
+        }
+	function closeWe(){
+	ws.close()
+}
+
+// 更新在线人数
+        function updateOnlineCount(count) {
+            const onlineCountDiv = document.getElementById("onlineCount");
+            onlineCountDiv.textContent = `Online Count: ${count}`;
+        }
+
+
+        </script>
+    </body>
+</html>
