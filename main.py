@@ -19,7 +19,7 @@ async def handle_client(websocket, path):
         while True:
             # 接收客户端发送的消息
             message = await websocket.recv()
-            # print(f"Received message: {message}")
+            print(f"Received message: {message}")
 
             # 生成消息id
             message_id = int(path[1:])
@@ -52,7 +52,7 @@ async def handle_client(websocket, path):
 
 
 async def main():
-    async with websockets.serve(handle_client, "0.0.0.0", 8765, ping_interval=None):
+    async with websockets.serve(handle_client, "localhost", 8000, ping_interval=None):
         await asyncio.Future()  # run forever
 
 

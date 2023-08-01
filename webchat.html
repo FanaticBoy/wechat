@@ -25,22 +25,43 @@ display:inline-block;
 
 }
 
+.cen{
+    text-align: center;
+}
 
+.ru{
+    position: absolute;
+    top: 0;
+    right: 10px;
+}
+
+.message-sent{
+  text-align: right;
+  color: #0066cc; }
+   /* 左侧消息样式，用于显示接收的消息 */ 
+.message-received {
+    text-align: left;
+    color: #333333; 
+    }
 
 </style>
-        <h1>WebSocket Chat</h1>
-        <h2>Your ID: <span id="ws-id"></span></h2>
-        
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button onclick="sendMessage()">Send</button>
-	    <button onclick="clearMessages()">Clear Messages</button>
+    <div class="cen">
+        <h1>自由聊天</h1>
+        <h2>你的ID: <span id="ws-id"></span></h2>
+            <div>
+            <textarea rows="10" cols="30" id="messageText" autocomplete="off"> 我是一个文本框。 </textarea> 
+            </div>
+        <button onclick="sendMessage()">发送</button>
+	    <button onclick="clearMessages()">清除</button>
  <input type="button" id="co" name="conn" value="连接" onclick="openConn()"/>
 <input type="button" name="conn" value="断开连接" onclick="closeWe()"/>
+<div class="ru">
+    <div class="show">连接状态：连接</div>
+    <div class="close">连接状态：断开</div>
+    <div id="onlineCount">在线人数: 0</div>
+</div>
 
-<div class="show">连接状态：连接</div>
-<div class="close">连接状态：断开</div>
- <div id="onlineCount">Online Count: 0</div>
-
+</div>
 
        
         <ul id='messages'>
@@ -54,16 +75,17 @@ function sendMessage() {
                 ws.send(input.value)
                 input.value = ''
                 //event.preventDefault()
+                // displayMessage(input.value, client_id);
             }
 function openConn(){
 init()
 }
 	    function init(){
-		ws = new WebSocket(`ws://ip:8765/${client_id}`);
+		ws = new WebSocket(`ws://localhost:8000/${client_id}`);
 		ws.onopen = function () {
 		ws.send("Request Online Count");
 		  document.getElementById('co').disabled=true
-                  let show=document.querySelector('.show')
+          let show=document.querySelector('.show')
 		  let close=document.querySelector('.close')
 		  close.classList.remove('hidden')
 		  show.classList.add('hidden')
@@ -71,7 +93,7 @@ init()
 		ws.onclose = function () {
             // 监听整个过程中websocket的状态
 		document.getElementById('co').disabled=false
-            console.log('ws连接状态：' + ws.readyState);
+        console.log('ws连接状态：' + ws.readyState);
 		let show=document.querySelector('.close')
 		let close=document.querySelector('.show')
 		close.classList.remove('hidden')
@@ -80,23 +102,23 @@ init()
                         }
             
             ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
+                const news = event.data;
+                // var messages = document.getElementById('messages')
+                // var message = document.createElement('li')
+                // var content = document.createTextNode(news)
+                displayMessage(news,client_id)
 		//过滤，服务器会发两个消息，一个连接数，一个消息，连接数过滤掉
-		if (event.data.includes("Online")){
-			console.log("kong")
-			const message1 = event.data;
-			const count = parseInt(message1.split(":")[1].trim());
-                	updateOnlineCount(count);
-			}else{
-			message.appendChild(content)
-		
-                       messages.appendChild(message)
-              }
                 
-
-		 
+		// if (news.includes("Online")){
+		// 	console.log("kong")
+		// 	const message1 = event.data;
+		// 	const count = parseInt(message1.split(":")[1].trim());
+        //         	updateOnlineCount(count);
+		// 	}else{
+		// 	message.appendChild(content)
+		
+        //                messages.appendChild(message)
+        //       }
             
             }
 }
@@ -116,8 +138,42 @@ init()
 // 更新在线人数
         function updateOnlineCount(count) {
             const onlineCountDiv = document.getElementById("onlineCount");
-            onlineCountDiv.textContent = `Online Count: ${count}`;
+            onlineCountDiv.textContent = `在线人数: ${count}`;
         }
+
+
+
+
+
+        // 显示消息 
+        function displayMessage(message, sent) {
+              // 根据消息来源添加不同的样式类 
+              
+                if (message.includes("Online")){
+			//console.log("kong")
+			const message1 = message;
+			const count = parseInt(message1.split(":")[1].trim());
+                	updateOnlineCount(count);
+			}else{
+                // 判断接收的消息是否和发送的id相同，相同则靠右
+                if (message.includes(sent)){
+                const messagesDiv = document.getElementById("messages");
+                messageDiv = document.createElement("div"); 
+                messageDiv.classList.add("message-sent");
+                messageDiv.textContent = message; 
+                messagesDiv.appendChild(messageDiv); 
+              }else{
+                const messagesDiv = document.getElementById("messages");
+                messageDiv = document.createElement("div"); 
+                messageDiv.classList.add("message-received");
+                messageDiv.textContent = message; 
+                messagesDiv.appendChild(messageDiv); 
+              }
+                }
+                
+                 
+                 
+                }
 
 
         </script>
